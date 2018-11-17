@@ -106,6 +106,15 @@ public interface FixtureConfiguration {
     FixtureConfiguration registerIgnoredField(Class<?> declaringClass, String fieldName);
 
     /**
+     * Registers a callback to be invoked when the fixture execution starts recording. This happens right before
+     * invocation of the 'when' step (stimulus) of the fixture.
+     *
+     * @param onStartRecording callback to invoke
+     * @return the current FixtureConfiguration, for fluent interfacing
+     */
+    FixtureConfiguration registerStartRecordingCallback(Runnable onStartRecording);
+
+    /**
      * Sets the instance that defines the behavior of the Command Bus when a command is dispatched with a callback.
      *
      * @param callbackBehavior The instance deciding to how the callback should be invoked.

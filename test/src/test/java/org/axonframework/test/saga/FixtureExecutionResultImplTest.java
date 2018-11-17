@@ -35,8 +35,10 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.axonframework.test.matchers.Matchers.*;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -313,6 +315,15 @@ public class FixtureExecutionResultImplTest {
         sagaStore.insertSaga(StubSaga.class, "test2", new StubSaga(), null, Collections.emptySet());
 
         testSubject.expectActiveSagas(1);
+    }
+
+    @Test
+    public void testStartRecordingCallback() {
+        AtomicInteger startRecordingCallbackInvocations = new AtomicInteger();
+        testSubject.registerStartRecordingCallback(startRecordingCallbackInvocations::incrementAndGet);
+        testSubject.startRecording();
+
+        assertThat(startRecordingCallbackInvocations.get(), equalTo(1));
     }
 
     private class FailingMatcher<T> extends BaseMatcher<List<? extends T>> {

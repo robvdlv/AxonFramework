@@ -16,6 +16,7 @@
 
 package org.axonframework.test.saga;
 
+import org.axonframework.common.Assert;
 import org.axonframework.eventhandling.EventBus;
 import org.axonframework.eventhandling.saga.repository.inmemory.InMemorySagaStore;
 import org.axonframework.test.eventscheduler.StubEventScheduler;
@@ -26,6 +27,8 @@ import org.hamcrest.Matcher;
 
 import java.time.Duration;
 import java.time.Instant;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import static org.axonframework.test.matchers.Matchers.equalTo;
 import static org.axonframework.test.matchers.Matchers.messageWithPayload;
@@ -44,6 +47,7 @@ public class FixtureExecutionResultImpl<T> implements FixtureExecutionResult {
     private final EventSchedulerValidator eventSchedulerValidator;
     private final CommandValidator commandValidator;
     private final FieldFilter fieldFilter;
+    private final List<Runnable> startRecordingCallbacks;
 
     /**
      * Initializes an instance and make it monitor the given infrastructure classes.
@@ -63,6 +67,18 @@ public class FixtureExecutionResultImpl<T> implements FixtureExecutionResult {
         repositoryContentValidator = new RepositoryContentValidator<>(sagaType, sagaStore);
         eventValidator = new EventValidator(eventBus, fieldFilter);
         eventSchedulerValidator = new EventSchedulerValidator(eventScheduler);
+        startRecordingCallbacks = new CopyOnWriteArrayList<>();
+    }
+
+    /**
+     * Registers a callback to be invoked when the fixture execution starts recording. This happens right before
+     * invocation of the 'when' step (stimulus) of the fixture.
+     *
+     * @param onStartRecording callback to invoke
+     */
+    public void registerStartRecordingCallback(Runnable onStartRecording) {
+        Assert.notNull(onStartRecording, "onStartRecording may not be null");
+        startRecordingCallbacks.add(onStartRecording);
     }
 
     /**
@@ -71,6 +87,7 @@ public class FixtureExecutionResultImpl<T> implements FixtureExecutionResult {
     public void startRecording() {
         eventValidator.startRecording();
         commandValidator.startRecording();
+        startRecordingCallbacks.forEach(Runnable::run);
     }
 
     @Override

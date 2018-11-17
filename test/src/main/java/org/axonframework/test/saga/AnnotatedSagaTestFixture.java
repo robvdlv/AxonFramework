@@ -41,6 +41,7 @@ import java.lang.reflect.Method;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
@@ -217,6 +218,12 @@ public class AnnotatedSagaTestFixture<T> implements FixtureConfiguration, Contin
     @Override
     public FixtureConfiguration registerIgnoredField(Class<?> declaringClass, String fieldName) {
         return registerFieldFilter(new IgnoreField(declaringClass, fieldName));
+    }
+
+    @Override
+    public FixtureConfiguration registerStartRecordingCallback(Runnable onStartRecording) {
+        this.fixtureExecutionResult.registerStartRecordingCallback(onStartRecording);
+        return this;
     }
 
     private AggregateEventPublisherImpl getPublisherFor(String aggregateIdentifier) {
